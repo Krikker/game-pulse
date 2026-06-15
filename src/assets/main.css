@@ -1,0 +1,56 @@
+:root {
+  --color-text: #ffffff;
+  --color-background: #01060f;
+  --color-visible-search: #0e141f;
+  --color-search-text: #94a3b8;
+  --color-gradient: linear-gradient(to right, #1f5bbb, #972fff);
+  --color-gold: #fcd34d;
+  --color-success: #2bbb86;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  color: var(--color-text);
+  background: var(--color-background);
+  transition:
+    color 0.5s,
+    background-color 0.5s;
+  font-family: 'Nunito', sans-serif;
+  font-size: 15px;
+}
+
+li {
+  list-style-type: none;
+}
+
+a {
+  text-decoration: none;
+  color: var(--color-text);
+}
+
+button {
+  background-color: inherit;
+  border: none;
+  cursor: pointer;
+}
+
+input {
+  outline: none;
+}
+
+input,
+textarea,
+select,
+button {
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+}
