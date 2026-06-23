@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import PlatformsReleased from '@/components/PlatformsReleased.vue';
 import type { Ratings, Result } from '@/interfaces/allGamesList.interface';
+import CorrectSVGIcon from './CorrectSVGIcon.vue';
 
 const games = defineProps<{
   games: Result | undefined;
@@ -60,7 +60,7 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
         </div>
       </div>
       <div class="rawg-info-wrapper platform-wrapper">
-        <PlatformsReleased :platforms="games.games?.platforms || []" size="28px" />
+        <CorrectSVGIcon :icon_base="games.games?.parent_platforms || []" size="28px" />
       </div>
       <div class="rawg-info-wrapper small-box-wrapper">
         <div class="small-box">

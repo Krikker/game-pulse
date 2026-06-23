@@ -62,8 +62,8 @@ const handleSubmitSearch = async () => {
     <div class="logo-name">
       <RouterLink to="/">
         <IconLogo />
+        <h1 class="project-name">GamePulse</h1>
       </RouterLink>
-      <h1 class="project-name">GamePulse</h1>
     </div>
     <div ref="searchContainerRef" class="search-container">
       <form @submit.prevent="handleSubmitSearch">
@@ -82,6 +82,7 @@ const handleSubmitSearch = async () => {
           <SuggestedGame
             :icon="game.background_image"
             :title="game.name"
+            :slug="game.slug"
             :release-date="game.released"
             :rating="game.metacritic"
           />
@@ -114,11 +115,7 @@ header {
   justify-items: center;
 }
 
-.project-name {
-  padding-bottom: 5px;
-}
-
-.logo-name {
+.logo-name a {
   display: flex;
   height: 100px;
   align-items: center;

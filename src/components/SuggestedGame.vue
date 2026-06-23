@@ -8,7 +8,7 @@ const props = defineProps<GameCard>();
 </script>
 
 <template>
-  <div class="suggested-game">
+  <RouterLink :to="{ name: 'GameDetails', params: { slug: props.slug } }" class="suggested-game">
     <img :src="props.icon" :alt="props.title" class="suggested-game__img" />
     <div class="suggested-game__content">
       <p class="suggested-game__title">{{ props.title }}</p>
@@ -22,7 +22,7 @@ const props = defineProps<GameCard>();
       </div>
     </div>
     <IconArrow class="arrow-svg" />
-  </div>
+  </RouterLink>
 </template>
 
 <style scoped>

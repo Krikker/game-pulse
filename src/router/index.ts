@@ -1,5 +1,6 @@
 import ComparePage from '@/views/ComparePage.vue';
 import DiscoverPage from '@/views/DiscoverPage.vue';
+import GameDetailsPage from '@/views/GameDetailsPage.vue';
 import LibraryPage from '@/views/LibraryPage.vue';
 import MainPage from '@/views/MainPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
@@ -19,6 +20,13 @@ const router = createRouter({
       path: '/search',
       component: SearchPage,
       name: 'Search',
+      props: (route) => ({ query: route.query }),
+    },
+    {
+      path: '/game/:slug',
+      name: 'GameDetails',
+      component: GameDetailsPage,
+      props: true,
     },
     {
       path: '/trending',
@@ -27,6 +35,8 @@ const router = createRouter({
     {
       path: '/discover',
       component: DiscoverPage,
+      name: 'Discover',
+      props: (route) => ({ query: route.query }),
     },
     {
       path: '/compare',

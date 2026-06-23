@@ -1,4 +1,5 @@
 import axios from 'axios';
+import type { FilterParams } from './interfaces/filter.interface';
 
 export const rawg = axios.create({
   baseURL: 'https://api.rawg.io/api',
@@ -44,9 +45,25 @@ export const rawgService = {
     });
   },
   getPlatforms: (pageSize = 5) => {
-    return rawg.get('/platforms', {
+    return rawg.get('/platforms/lists/parents', {
       params: {
         page_size: pageSize,
+      },
+    });
+  },
+  getTags: () => rawg.get('/tags', { params: { page_size: 50 } }),
+  getByFilter: (filters: FilterParams) => {
+    return rawg.get('/games', {
+      params: {
+        page: filters.page || 1,
+        page_size: filters.pageSize || 20,
+        genres: filters.genres,
+        platforms: filters.platforms,
+        tags: filters.tags,
+        dates: filters.dates,
+        metacritic: filters.metacritic,
+        ordering: filters.ordering || '-added',
+        search: filters.search,
       },
     });
   },

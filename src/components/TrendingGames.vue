@@ -5,11 +5,11 @@ const props = defineProps<GameCard>();
 </script>
 
 <template>
-  <div class="trend-game">
+  <RouterLink :to="{ name: 'GameDetails', params: { slug: props.slug } }" class="trend-game">
     <img :src="props.icon" :alt="props.title" class="trend-game__img" />
     <span class="trend-game__rating">{{ props.rating }}</span>
     <h4 class="trend-game__title">{{ props.title }}</h4>
-  </div>
+  </RouterLink>
 </template>
 
 <style scoped>
