@@ -1,16 +1,18 @@
 <script setup lang="ts">
 import { useGenresPlatformsTags } from '@/stores/genresPlatformsTags.store';
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 
-const genresPlatformsTags = useGenresPlatformsTags();
+const store = useGenresPlatformsTags();
 
 const tagQuery = ref<string>('');
 const isOpen = ref<boolean>(false);
+const containerRef = ref<HTMLElement | null>(null);
+
 const selectedTags = defineModel<number[]>('modelValue', { default: [] });
 
 const filterTags = computed(() => {
   if (!tagQuery.value) return [];
-  return genresPlatformsTags.tags
+  return store.tags
     .filter(
       (tag) =>
         tag.name.toLowerCase().includes(tagQuery.value.toLowerCase()) &&
@@ -28,16 +30,25 @@ const addTag = (id: number) => {
 };
 
 const removeTag = (id: number) => {
-  selectedTags.value = selectedTags.value.filter((tag) => tag !== id);
+  selectedTags.value = selectedTags.value.filter((tagId) => tagId !== id);
 };
 
 const showSelected = computed(() => {
-  return genresPlatformsTags.tags.filter((tag) => selectedTags.value.includes(tag.id));
+  return store.tags.filter((tag) => selectedTags.value.includes(tag.id));
 });
+
+const handleClickOutside = (event: MouseEvent) => {
+  if (containerRef.value && !containerRef.value.contains(event.target as Node)) {
+    isOpen.value = false;
+  }
+};
+
+onMounted(() => document.addEventListener('click', handleClickOutside));
+onUnmounted(() => document.removeEventListener('click', handleClickOutside));
 </script>
 
 <template>
-  <div class="tag-list">
+  <div class="tag-list" ref="containerRef">
     <h3>Tags</h3>
     <input
       type="text"
@@ -45,17 +56,20 @@ const showSelected = computed(() => {
       v-model="tagQuery"
       placeholder="Search tags..."
       @focus="isOpen = true"
+      @click.stop="isOpen = true"
     />
-    <ul class="autocomplete-suggest" v-if="isOpen && selectedTags.length > 0">
+    <ul v-if="isOpen && tagQuery && filterTags.length > 0" class="autocomplete-suggest">
       <li class="matches" v-for="item in filterTags" :key="item.id" @click="addTag(item.id)">
         {{ item.name }}
       </li>
-      <li class="no-matches" v-if="filterTags.length === 0">Tags not found</li>
     </ul>
-    <div class="selected-matches" v-if="selectedTags.length > 0">
-      <span lass="selected-tag" v-for="item in showSelected" :key="item.id">
+    <ul v-if="isOpen && tagQuery && filterTags.length === 0" class="autocomplete-suggest">
+      <li class="no-matches">No tags found</li>
+    </ul>
+    <div class="selected-matches" v-if="showSelected.length > 0">
+      <span class="selected-tag" v-for="item in showSelected" :key="item.id">
         {{ item.name }}
-        <button type="button" @click="removeTag(item.id)">x</button>
+        <button type="button" @click.stop="removeTag(item.id)">×</button>
       </span>
     </div>
   </div>
@@ -63,23 +77,54 @@ const showSelected = computed(() => {
 
 <style scoped>
 .tag-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   position: relative;
-  background: #1e293b;
-  border-radius: 8px;
-  padding: 8px;
-  min-height: 45px;
-  cursor: text;
+}
+
+.tag-list h3 {
+  color: var(--color-text);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.tag-input {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  color: var(--color-text);
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  font-size: 1rem;
+}
+
+.tag-input::placeholder {
+  color: var(--color-search-text);
+}
+
+.tag-input:focus {
+  border-color: #3b82f6;
+}
+
+.selected-matches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .selected-tag {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  display: flex;
+  background: rgba(59, 130, 246, 0.18);
+  color: #93c5fd;
+  padding: 6px 12px;
+  border-radius: 50px;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  font-size: 0.9rem;
+  border: 1px solid rgba(59, 130, 246, 0.3);
 }
 
 .selected-matches button {
@@ -89,15 +134,12 @@ const showSelected = computed(() => {
   cursor: pointer;
   font-size: 1.1rem;
   line-height: 1;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
-.tag-input {
-  background: transparent;
-  border: none;
-  color: white;
-  outline: none;
-  flex: 1;
-  min-width: 100px;
+.selected-matches button:hover {
+  opacity: 1;
 }
 
 .autocomplete-suggest {
@@ -105,25 +147,33 @@ const showSelected = computed(() => {
   top: 100%;
   left: 0;
   right: 0;
-  background: #131a2a;
-  border: 1px solid #334155;
-  border-radius: 8px;
-  margin-top: 5px;
+  background: #1e293b;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  margin-top: 10px;
   list-style: none;
-  padding: 0;
   z-index: 100;
-  max-height: 200px;
+  max-height: 220px;
   overflow-y: auto;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
 }
 
-.matches {
-  padding: 10px;
+.matches,
+.no-matches {
+  padding: 10px 16px;
+  font-size: 1rem;
+  color: #cbd5e1;
   cursor: pointer;
   transition: background 0.2s;
 }
 
 .matches:hover {
-  background: #1e293b;
-  color: #60a5fa;
+  background: rgba(59, 130, 246, 0.14);
+  color: #ffffff;
+}
+
+.no-matches {
+  cursor: default;
+  color: #64748b;
 }
 </style>

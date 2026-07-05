@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 import IconLogo from './icons/IconLogo.vue';
 import IconSearch from './icons/IconSearch.vue';
 import { useDebounce } from './UseDebounce.ts';
 import { rawgService } from '@/api.ts';
 import type { Result } from '@/interfaces/allGamesList.interface.ts';
 import SuggestedGame from './SuggestedGame.vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import { useClickOutside } from './UseClickOutside.ts';
 
 const searchQuery = ref<string>('');
@@ -21,7 +21,19 @@ useClickOutside(searchContainerRef, () => {
 });
 
 const router = useRouter();
+const route = useRoute();
+const isDiscover = computed(() => route.name === 'Discover');
+const searchText = computed(() => String(route.query.search || '').trim());
 const debouncedQuery = useDebounce(searchQuery);
+
+watch(
+  () => route.query.search,
+  (value) => {
+    if (!isDiscover.value) {
+      searchQuery.value = String(value || '');
+    }
+  },
+);
 
 watch(debouncedQuery, async (newQuery) => {
   if (!newQuery) {
@@ -50,8 +62,8 @@ const handleSubmitSearch = async () => {
     results.value = [];
     isDropdownOpen.value = false;
     router.push({
-      name: 'Search',
-      params: { query: query },
+      name: 'Discover',
+      query: { search: query },
     });
   }
 };
@@ -65,33 +77,48 @@ const handleSubmitSearch = async () => {
         <h1 class="project-name">GamePulse</h1>
       </RouterLink>
     </div>
-    <div ref="searchContainerRef" class="search-container">
-      <form @submit.prevent="handleSubmitSearch">
-        <button type="submit" class="search-button"><IconSearch /></button>
-        <input
-          type="text"
-          class="search-input"
-          v-model="searchQuery"
-          @focus="isDropdownOpen = results.length > 0"
-          @keydown.esc="isDropdownOpen = false"
-          placeholder="Search games, genres, platforms..."
-        />
-      </form>
-      <ul v-if="results.length > 0 && isDropdownOpen" class="search-result-dropdown">
-        <li v-for="game in results" :key="game.id">
-          <SuggestedGame
-            :icon="game.background_image"
-            :title="game.name"
-            :slug="game.slug"
-            :release-date="game.released"
-            :rating="game.metacritic"
-          />
-        </li>
-      </ul>
-      <div v-if="isLoading && isDropdownOpen" class="loading-indicator-wrap">
-        <span>Searching...</span>
-        <div class="loading-indicator"></div>
-      </div>
+    <div class="header-center">
+      <template v-if="isDiscover">
+        <div class="breadcrumbs">
+          <RouterLink to="/">Home</RouterLink>
+          <span>/</span>
+          <span>Discover</span>
+        </div>
+        <div class="discover-info">
+          <span v-if="searchText">Search results for "{{ searchText }}"</span>
+          <span v-else>Use the Discover page search to find games or filter by genre.</span>
+        </div>
+      </template>
+      <template v-else>
+        <div ref="searchContainerRef" class="search-container">
+          <form @submit.prevent="handleSubmitSearch">
+            <button type="submit" class="search-button"><IconSearch /></button>
+            <input
+              type="text"
+              class="search-input"
+              v-model="searchQuery"
+              @focus="isDropdownOpen = results.length > 0"
+              @keydown.esc="isDropdownOpen = false"
+              placeholder="Search games, genres, platforms..."
+            />
+          </form>
+          <ul v-if="results.length > 0 && isDropdownOpen" class="search-result-dropdown">
+            <li v-for="game in results" :key="game.id">
+              <SuggestedGame
+                :icon="game.background_image"
+                :title="game.name"
+                :slug="game.slug"
+                :release-date="game.released"
+                :rating="game.metacritic"
+              />
+            </li>
+          </ul>
+          <div v-if="isLoading && isDropdownOpen" class="loading-indicator-wrap">
+            <span>Searching...</span>
+            <div class="loading-indicator"></div>
+          </div>
+        </div>
+      </template>
     </div>
     <nav>
       <ul class="router-links">
@@ -121,6 +148,34 @@ header {
   align-items: center;
 }
 
+.header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 360px;
+  text-align: center;
+}
+
+.breadcrumbs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 14px;
+  color: var(--color-search-text);
+  margin-bottom: 6px;
+}
+
+.breadcrumbs span {
+  color: var(--color-text);
+}
+
+.discover-info {
+  font-size: 13px;
+  color: var(--color-search-text);
+  line-height: 1.4;
+}
+
 .search-container {
   position: relative;
   width: 360px;
@@ -133,6 +188,7 @@ form {
   border-radius: 10px;
   display: flex;
   gap: 5px;
+  border: 1px solid var(--color-box-border);
 }
 
 form:focus-within {
@@ -144,7 +200,6 @@ form:focus-within {
   height: 35px;
   width: 100%;
   background-color: var(--color-visible-search);
-  border: none;
   color: var(--color-text);
 }
 

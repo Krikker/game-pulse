@@ -3,6 +3,7 @@
   --color-background: #01060f;
   --color-visible-search: #0e141f;
   --color-search-text: #94a3b8;
+  --color-box-border: rgba(148, 163, 184, 0.18);
   --color-gradient: linear-gradient(to right, #1f5bbb, #972fff);
   --color-gold: #fcd34d;
   --color-success: #2bbb86;
@@ -44,6 +45,7 @@ button {
 
 input {
   outline: none;
+  border: none;
 }
 
 input,
@@ -53,4 +55,23 @@ button {
   font-family: inherit;
   font-size: inherit;
   color: inherit;
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  padding: 0 150px;
+}
+
+.additional-info--grey-small {
+  color: var(--color-search-text);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.additional-info--grey-big {
+  color: var(--color-search-text);
+  font-size: 16px;
+  font-weight: 500;
 }

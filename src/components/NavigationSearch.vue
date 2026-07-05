@@ -1,55 +1,89 @@
 <script setup lang="ts">
 import { useGenresPlatformsTags } from '@/stores/genresPlatformsTags.store.ts';
 import { ref, watch } from 'vue';
-import type VueSlider from 'vue-slider-component';
-import IconStar from './icons/IconStar.vue';
 import type { FilterParams } from '@/interfaces/filter.interface.ts';
+import CorrectSVGIcon from './CorrectSVGIcon.vue';
+import RatingStars from './RatingStars.vue';
 import TagAutocomplete from './TagAutocomplete.vue';
+import YearRangeSlider from './YearRangeSlider.vue';
+
+const props = defineProps<{ initialFilters?: FilterParams }>();
 
 const genresPlatformsTags = useGenresPlatformsTags();
 
-const selectedGenres = ref<number[]>([]);
-const selectedPlatforms = ref<number[]>([]);
-const selectedTags = ref<number[]>([]);
-const minRating = ref<number | null>(null);
-const yearFrom = ref<string>('');
-const yearTo = ref<string>('');
-
-const emit = defineEmits<{ (e: 'update', filters: FilterParams): void }>();
-
-const updateFilters = () => {
-  const filters = {
-    genres: selectedGenres.value.length ? selectedGenres.value.join(',') : undefined,
-    platforms: selectedPlatforms.value.length ? selectedPlatforms.value.join(',') : undefined,
-    tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
-    metacritic: minRating.value ? `${Math.round(minRating.value * 20)},100` : undefined,
-    dates:
-      yearFrom.value && yearTo.value ? `${yearFrom.value}-01-01,${yearTo.value}-12-31` : undefined,
-  };
-  emit('update', filters);
-};
-
-watch(
-  [selectedGenres, selectedPlatforms, selectedTags, minRating, yearFrom, yearTo],
-  updateFilters,
-  { deep: true },
+const selectedGenres = ref<number[]>(
+  props.initialFilters?.genres ? String(props.initialFilters.genres).split(',').map(Number) : [],
+);
+const selectedPlatforms = ref<number[]>(
+  props.initialFilters?.platforms
+    ? String(props.initialFilters.platforms).split(',').map(Number)
+    : [],
+);
+const selectedTags = ref<number[]>(
+  props.initialFilters?.tags ? String(props.initialFilters.tags).split(',').map(Number) : [],
 );
 
-const toggleSelection = (list: number[], id: number) => {
-  if (list.includes(id)) {
-    return list.filter((item) => item !== id);
-  } else {
-    return [...list, id];
-  }
+const minYear = 1980;
+const maxYear = 2026;
+
+const parseYearRange = (): [number, number] => {
+  if (!props.initialFilters?.dates) return [minYear, maxYear];
+  const [from, to] = String(props.initialFilters.dates).split(',');
+  const fromYear = Number(from?.slice(0, 4));
+  const toYear = Number(to?.slice(0, 4));
+  return [
+    Number.isFinite(fromYear) ? fromYear : minYear,
+    Number.isFinite(toYear) ? toYear : maxYear,
+  ];
 };
+
+const range = ref<[number, number]>(parseYearRange());
+
+const ratingFromQuery = props.initialFilters?.metacritic
+  ? Number(String(props.initialFilters.metacritic).split(',')[0])
+  : 0;
+const minRatingStars = ref<number>(ratingFromQuery ? ratingFromQuery / 20 : 0);
+const minRating = ref<number | null>(minRatingStars.value || null);
 
 const visibleGenresCount = ref<number>(5);
 const visiblePlatformsCount = ref<number>(5);
 
-const range = ref<number[]>([2000, 2026]);
+const emit = defineEmits<{ (e: 'update', filters: FilterParams): void }>();
 
-const minRatingStars = ref<number>(0);
-const hoverRating = ref<number>(0);
+const updateFilters = () => {
+  const filters: FilterParams = {
+    genres: selectedGenres.value.length ? selectedGenres.value.join(',') : undefined,
+    platforms: selectedPlatforms.value.length ? selectedPlatforms.value.join(',') : undefined,
+    tags: selectedTags.value.length ? selectedTags.value.join(',') : undefined,
+    metacritic: minRating.value ? `${Math.round(minRating.value * 20)},100` : undefined,
+    dates: `${range.value[0]}-01-01,${range.value[1]}-12-31`,
+  };
+  emit('update', filters);
+};
+
+watch([selectedGenres, selectedPlatforms, selectedTags, minRating, range], updateFilters, {
+  deep: true,
+});
+
+watch(minRatingStars, (value) => {
+  minRating.value = value || null;
+});
+
+const toggleSelection = (list: number[], id: number) => {
+  return list.includes(id) ? list.filter((item) => item !== id) : [...list, id];
+};
+
+const clearFilters = () => {
+  selectedGenres.value = [];
+  selectedPlatforms.value = [];
+  selectedTags.value = [];
+  minRatingStars.value = 0;
+  minRating.value = null;
+  range.value = [minYear, maxYear];
+  visibleGenresCount.value = 5;
+  visiblePlatformsCount.value = 5;
+  updateFilters();
+};
 </script>
 
 <template>
@@ -60,6 +94,7 @@ const hoverRating = ref<number>(0);
         class="genres-button"
         v-for="genre in genresPlatformsTags.genres.slice(0, visibleGenresCount)"
         :key="genre.id"
+        :class="{ selected: selectedGenres.includes(genre.id) }"
         @click="selectedGenres = toggleSelection(selectedGenres, genre.id)"
       >
         <CorrectSVGIcon :icon_base="[genre]" size="30px" />
@@ -73,15 +108,17 @@ const hoverRating = ref<number>(0);
         Show More
       </button>
     </div>
+
     <div class="platform-list">
-      <h3>Genres</h3>
+      <h3>Platforms</h3>
       <button
         class="platform-button"
         v-for="platform in genresPlatformsTags.platforms.slice(0, visiblePlatformsCount)"
         :key="platform.id"
-        @click="selectedGenres = toggleSelection(selectedGenres, platform.id)"
+        :class="{ selected: selectedPlatforms.includes(platform.id) }"
+        @click="selectedPlatforms = toggleSelection(selectedPlatforms, platform.id)"
       >
-        <CorrectSVGIcon :icon_base="[platform]" size="30px" />
+        <CorrectSVGIcon :icon_base="[platform]" size="27px" />
         <h4 class="platform-title">{{ platform.name }}</h4>
       </button>
       <button
@@ -92,79 +129,115 @@ const hoverRating = ref<number>(0);
         Show More
       </button>
     </div>
+
     <div class="release-list">
       <h3>Release Year</h3>
-      <VueSlider v-model="range" :min="1980" :max="2026" :interval="1" class="slider-date" />
-      <span class="years-display">{{ range[0] }} - {{ range[1] }}</span>
+      <YearRangeSlider v-model="range" :min="minYear" :max="maxYear" />
     </div>
+
     <div class="rating-list">
       <h3>Rating</h3>
-      <div class="stars-wrapper" @mouseleave="hoverRating = minRatingStars">
-        <div class="star-container" v-for="i in 5" :key="i">
-          <div
-            class="hit-area left"
-            :class="{ filled: hoverRating >= i - 0.5 }"
-            @mouseenter="hoverRating = i - 0.5"
-            @click="minRatingStars = i - 0.5"
-          >
-            <IconStar />
-          </div>
-          <div
-            class="hit-area right"
-            :class="{ filled: hoverRating >= i }"
-            @mouseenter="hoverRating = i"
-            @click="minRatingStars = i"
-          >
-            <IconStar />
-          </div>
-        </div>
-      </div>
+      <RatingStars v-model="minRatingStars" />
     </div>
-    <TagAutocomplete />
+
+    <TagAutocomplete v-model="selectedTags" />
+    <button type="button" class="clear-filters-button" @click="clearFilters">Clear filters</button>
   </div>
 </template>
 
 <style scoped>
-.star-box {
-  position: relative;
-  width: 24px;
-  height: 24px;
+.search-column {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  background: var(--color-visible-search);
+  border: 1px solid var(--color-box-border);
+  border-radius: 32px;
+  padding: 24px 20px;
 }
 
-.half-star {
-  position: absolute;
-  top: 0;
-  width: 50%;
-  height: 100%;
-  overflow: hidden; /* Обрезаем все, что выходит за половину */
-  color: #334155; /* Серый по умолчанию */
-  transition: color 0.2s;
+.genres-list,
+.platform-list,
+.release-list,
+.rating-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.half-star.left {
-  left: 0;
-}
-.half-star.right {
-  right: 0;
-}
-
-/* Когда добавляем класс filled, меняем цвет на золотой */
-.half-star.filled {
-  color: #fcd34d;
+.genres-list h3,
+.platform-list h3,
+.release-list h3,
+.rating-list h3 {
+  color: var(--color-text);
+  font-size: 1.4rem;
+  font-weight: 700;
 }
 
-/* Внутри half-star иконка должна быть полной, чтобы обрезка работала корректно */
-.half-star svg {
-  width: 200%; /* Растягиваем иконку в 2 раза, чтобы она заняла всю ширину контейнера */
-  height: 100%;
-  position: absolute;
-  top: 0;
+.genres-button,
+.platform-button {
+  display: flex;
+  align-items: center;
+  height: 50px;
+  gap: 12px;
+  border-radius: 18px;
+  padding: 7px;
+  background: var(--color-visible-search);
+  color: var(--color-text);
+  transition: all 0.2s ease;
 }
 
-.half-star.left svg {
-  left: 0;
+.genres-button:hover,
+.platform-button:hover {
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  transform: translateY(-1px);
 }
-.half-star.right svg {
-  right: 0;
-} /* Сдвигаем правую иконку влево, чтобы она встала на место */
+
+.genres-button.selected,
+.platform-button.selected {
+  border: 1px solid rgba(56, 189, 248, 0.5);
+  background: rgba(59, 130, 246, 0.06);
+  transform: translateY(-1px);
+}
+
+.filter-title,
+.platform-title,
+.button-more {
+  font-size: 1.15rem;
+  font-weight: 500;
+}
+
+.button-more {
+  border-radius: 16px;
+  height: 40px;
+  background: var(--color-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-size: 70% 100%;
+  transition: all 0.2s ease;
+}
+
+.button-more:hover {
+  border: 1px solid rgba(59, 130, 246, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.16);
+}
+
+.clear-filters-button {
+  margin-top: 5px;
+  border-radius: 16px;
+  height: 45px;
+  background: var(--color-gradient);
+  color: var(--color-text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.clear-filters-button:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+  box-shadow: 0 12px 24px rgba(59, 130, 246, 0.16);
+}
 </style>

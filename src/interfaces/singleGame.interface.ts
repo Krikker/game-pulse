@@ -1,3 +1,5 @@
+import type { Ratings } from './allGamesList.interface';
+
 export interface RootInterface {
   id: number;
   slug: string;

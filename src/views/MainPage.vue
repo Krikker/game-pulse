@@ -111,13 +111,6 @@ onBeforeMount(() => {
 </template>
 
 <style scoped>
-main {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-  padding: 0 150px;
-}
-
 .tranding-games-section {
   display: flex;
   flex-direction: column;
@@ -175,9 +168,6 @@ main {
 .trending-games-list a {
   width: 230px;
   height: 285px;
-  position: relative;
-  border-radius: 10px;
-  background: var(--color-visible-search);
 }
 
 .genres-and-platforms {

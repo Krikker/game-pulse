@@ -22,7 +22,7 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
         <h1>Analyze trends.</h1>
         <h1 class="slogan-colorful">Play better.</h1>
       </div>
-      <h4>
+      <h4 class="additional-info--grey-big">
         GamePulse provides powerful insights, player stats and community sentiment for games you
         love.
       </h4>
@@ -54,8 +54,8 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
           </div>
           <div>
             <p class="additional-info-white">{{ frequentRating(games.games?.ratings) }}</p>
-            <p class="additional-info-grey">Release Date: {{ games.games?.released }}</p>
-            <p class="additional-info-grey">Based on RAWG users ratings!</p>
+            <p class="additional-info--grey-small">Release Date: {{ games.games?.released }}</p>
+            <p class="additional-info--grey-small">Based on RAWG users ratings!</p>
           </div>
         </div>
       </div>
@@ -65,15 +65,15 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
       <div class="rawg-info-wrapper small-box-wrapper">
         <div class="small-box">
           <p>{{ games.games?.added }}</p>
-          <p class="additional-info-grey">Added to the library</p>
+          <p class="additional-info--grey-small">Added to the library</p>
         </div>
         <div class="small-box">
           <p>{{ games.games?.playtime }}</p>
-          <p class="additional-info-grey">Average playtime</p>
+          <p class="additional-info--grey-small">Average playtime</p>
         </div>
         <div class="small-box">
           <p>{{ games.games?.ratings_count }}</p>
-          <p class="additional-info-grey">Ratings Count</p>
+          <p class="additional-info--grey-small">Ratings Count</p>
         </div>
       </div>
     </div>
@@ -108,12 +108,6 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   background-size: 40% 100%;
-}
-
-.main-page__banner-left h4 {
-  color: var(--color-search-text);
-  font-size: 16px;
-  font-weight: 500;
 }
 
 .buttons-wrapper {
@@ -255,12 +249,6 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
 
 .additional-info-white {
   font-size: 16px;
-  font-weight: 500;
-}
-
-.additional-info-grey {
-  color: var(--color-search-text);
-  font-size: 13px;
   font-weight: 500;
 }
 

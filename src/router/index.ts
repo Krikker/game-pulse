@@ -4,7 +4,6 @@ import GameDetailsPage from '@/views/GameDetailsPage.vue';
 import LibraryPage from '@/views/LibraryPage.vue';
 import MainPage from '@/views/MainPage.vue';
 import ProfilePage from '@/views/ProfilePage.vue';
-import SearchPage from '@/views/SearchPage.vue';
 import StatsPage from '@/views/StatsPage.vue';
 import TrendPage from '@/views/TrendPage.vue';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -15,12 +14,6 @@ const router = createRouter({
     {
       path: '/',
       component: MainPage,
-    },
-    {
-      path: '/search',
-      component: SearchPage,
-      name: 'Search',
-      props: (route) => ({ query: route.query }),
     },
     {
       path: '/game/:slug',
