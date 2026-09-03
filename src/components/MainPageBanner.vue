@@ -28,7 +28,7 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
       </h4>
       <div class="buttons-wrapper">
         <RouterLink to="/discover" class="btn btn-primary">Explore Games</RouterLink>
-        <RouterLink to="/discover" class="btn btn-secondary">Watch Demo</RouterLink>
+        <RouterLink to="/compare" class="btn btn-secondary">Compare games</RouterLink>
       </div>
     </div>
     <div
@@ -86,18 +86,19 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
   position: relative;
   justify-content: space-between;
   align-items: end;
-  height: 350px;
+  min-height: clamp(270px, 31vw, 350px);
+  height: clamp(270px, 31vw, 350px);
 }
 
 .main-page__banner-left {
-  width: 45%;
+  width: min(45%, 520px);
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
 .slogan-wrapper h1 {
-  font-size: 40px;
+  font-size: clamp(28px, 3.2vw, 40px);
   font-weight: 750;
   line-height: 1.2;
 }
@@ -170,7 +171,7 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
   position: absolute;
   top: 0;
   right: 0;
-  width: 65%;
+  width: clamp(52%, 70vw, 70%);
   height: inherit;
   z-index: -1;
   overflow: hidden;
@@ -204,6 +205,8 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  max-width: min(42%, 330px);
+  z-index: 1;
 }
 
 .rawg-info-wrapper {
@@ -217,6 +220,9 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .rawg-info-wrapper__box {
@@ -267,5 +273,214 @@ const frequentRating = (ratingsArr: Ratings[] | undefined) => {
 .small-box-wrapper {
   display: flex;
   gap: 10px;
+}
+
+@media (max-width: 1500px) {
+  .main-page__banner {
+    min-height: 275px;
+    height: 275px;
+  }
+
+  .slogan-wrapper h1 {
+    font-size: 35px;
+  }
+
+  .main-page__banner-left .additional-info--grey-big {
+    font-size: 15px;
+  }
+
+  .rawg-info-wrapper {
+    padding: 4px;
+  }
+
+  .rawg-info-wrapper__rating span {
+    font-size: 20px;
+  }
+
+  .platform-wrapper {
+    gap: 8px;
+    padding-left: 8px;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 901px) {
+  .main-page__poster {
+    width: 76%;
+  }
+
+  .main-page__banner-right {
+    max-width: 45%;
+  }
+}
+
+@media (max-width: 900px) {
+  .main-page__banner {
+    min-height: clamp(230px, 38vw, 310px);
+    height: clamp(230px, 38vw, 310px);
+  }
+  .main-page__banner-left {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 44%;
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(4px);
+    z-index: 2;
+  }
+  .slogan-wrapper {
+    display: block;
+  }
+  .slogan-wrapper h1 {
+    display: none;
+  }
+  .slogan-wrapper h1:first-child {
+    display: block;
+    font-size: clamp(16px, 2.3vw, 22px);
+  }
+  .main-page__banner-left .additional-info--grey-big {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    font-size: 14px;
+    line-height: 1.25;
+  }
+  .buttons-wrapper .btn-primary {
+    padding: 8px 12px;
+    white-space: nowrap;
+  }
+  .buttons-wrapper .btn-secondary {
+    display: none;
+  }
+  .platform-wrapper,
+  .small-box-wrapper {
+    display: none;
+  }
+  .main-page__poster {
+    left: 0;
+    right: auto;
+    width: 100%;
+  }
+  .main-page__img {
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0 38%,
+      rgba(0, 0, 0, 0.75) 62%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(90deg, #000 0 38%, rgba(0, 0, 0, 0.75) 62%, transparent 100%);
+  }
+  .main-page__poster-glow {
+    opacity: 0.55;
+    -webkit-mask-image: linear-gradient(90deg, #000 0 45%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0 45%, transparent 100%);
+  }
+  .main-page__banner-right {
+    width: 42%;
+    max-width: 42%;
+    margin-left: auto;
+  }
+  .rawg-info-wrapper {
+    padding: 9px;
+  }
+  .rawg-info-wrapper__box {
+    gap: 8px;
+  }
+  .small-box-wrapper {
+    gap: 6px;
+  }
+}
+
+@media (max-width: 600px) {
+  .main-page__banner {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    align-items: stretch;
+    height: 380px;
+  }
+
+  .main-page__banner-left {
+    left: auto;
+    right: 8px;
+    bottom: 10px;
+    width: 48%;
+    gap: 6px;
+    align-items: center;
+    padding: 9px;
+    text-align: center;
+  }
+
+  .main-page__banner-left .buttons-wrapper {
+    justify-content: center;
+  }
+  .main-page__poster {
+    left: 0;
+    right: auto;
+    width: 100%;
+  }
+  .main-page__img {
+    object-position: 32% center;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      #000 0 20%,
+      rgba(0, 0, 0, 0.82) 55%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+    mask-image: linear-gradient(
+      90deg,
+      #000 0 20%,
+      rgba(0, 0, 0, 0.82) 55%,
+      rgba(0, 0, 0, 0.25) 100%
+    );
+  }
+  .main-page__poster-glow {
+    opacity: 0.75;
+    -webkit-mask-image: linear-gradient(90deg, #000 0 50%, transparent 100%);
+    mask-image: linear-gradient(90deg, #000 0 50%, transparent 100%);
+  }
+  .main-page__banner-right {
+    align-self: flex-end;
+    width: 49%;
+    max-width: 49%;
+    margin-left: auto;
+    margin-right: 2px;
+    margin-bottom: 8px;
+    align-items: center;
+  }
+
+  .rawg-info-wrapper {
+    display: none;
+  }
+  .rawg-info-wrapper__box {
+    justify-content: center;
+  }
+  .rawg-info-wrapper__rating span {
+    font-size: clamp(18px, 5vw, 25px);
+  }
+  .rawg-info-wrapper__box {
+    align-items: center;
+  }
+  .main-page__banner-left .additional-info--grey-big {
+    font-size: 13px;
+  }
+  .slogan-wrapper h1:first-child {
+    font-size: 16px;
+  }
+  .buttons-wrapper .btn-primary {
+    padding: 7px 10px;
+    font-size: 12px;
+  }
+  .additional-info-white,
+  .rawg-info-wrapper h2 {
+    font-size: clamp(13px, 3.6vw, 16px);
+  }
+  .additional-info--grey-small {
+    font-size: clamp(10px, 2.8vw, 13px);
+  }
 }
 </style>

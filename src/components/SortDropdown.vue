@@ -2,66 +2,76 @@
 import { computed, ref } from 'vue';
 import { useClickOutside } from './UseClickOutside';
 
-const props = defineProps<{
-  modelValue: string;
-}>();
+type SortOption = {
+  label: string;
+  key: string;
+};
+
+const props = withDefaults(
+  defineProps<{
+    modelValue: string;
+    options: SortOption[];
+    allowReverse?: boolean;
+    label?: string;
+  }>(),
+  {
+    allowReverse: true,
+    label: 'Sort by',
+  },
+);
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void;
 }>();
 
-const isOpen = ref<boolean>(false);
-const searchContainerRef = ref<HTMLElement | null>(null);
+const isOpen = ref(false);
+const containerRef = ref<HTMLElement | null>(null);
 
-useClickOutside(searchContainerRef, () => {
+useClickOutside(containerRef, () => {
   isOpen.value = false;
 });
 
-const baseOptions = [
-  { label: 'Popularity', key: 'added' },
-  { label: 'Release Date', key: 'released' },
-  { label: 'Name (A-Z)', key: 'name' },
-  { label: 'Rating', key: 'rating' },
-  { label: 'Metacritic', key: 'metacritic' },
-];
+const baseOptions = computed(() => props.options);
 
 const currentKey = computed(() => props.modelValue.replace('-', ''));
 const isReversed = computed(() => props.modelValue.startsWith('-'));
 
 const currentLabel = computed(() => {
-  const current = baseOptions.find((o) => o.key === currentKey.value);
-  return current ? current.label : 'Popularity';
+  const current = baseOptions.value.find((option) => option.key === currentKey.value);
+  return current?.label ?? baseOptions.value[0]?.label ?? 'Sort';
 });
 
 const selectOption = (key: string) => {
-  let newValue: string;
-  if (key === currentKey.value) {
-    newValue = isReversed.value ? key : `-${key}`;
-  } else {
-    newValue = key;
+  let nextValue = key;
+
+  if (props.allowReverse) {
+    nextValue = key === currentKey.value && !isReversed.value ? `-${key}` : key;
   }
-  emit('update:modelValue', newValue);
+
+  emit('update:modelValue', nextValue);
   isOpen.value = false;
 };
 </script>
 
 <template>
-  <div class="sort-wrapper" ref="searchContainerRef">
-    <span class="text">Sort by</span>
-    <button type="button" @click="isOpen = !isOpen" class="sort-trigger">
+  <div ref="containerRef" class="sort-wrapper" @click="isOpen = !isOpen">
+    <span class="text sort-label">{{ props.label }}</span>
+    <button type="button" class="sort-trigger" @click.stop="isOpen = !isOpen">
       <span class="text">{{ currentLabel }}</span>
       <div class="arrow">▼</div>
     </button>
-    <ul class="dropdown" v-if="isOpen">
+    <ul v-if="isOpen" class="dropdown" @click.stop>
       <li
-        v-for="label in baseOptions"
-        :key="label.key"
-        @click="selectOption(label.key)"
+        v-for="option in baseOptions"
+        :key="option.key"
         class="sort-item"
-        :class="{ selected: label.key === currentKey }"
+        :class="{ selected: option.key === currentKey }"
+        @click="selectOption(option.key)"
       >
-        {{ label.label }}
-        <span v-if="label.key === currentKey" class="direction">{{ isReversed ? '↓' : '↑' }}</span>
+        {{ option.label }}
+        <span v-if="option.key === currentKey && props.allowReverse" class="direction">
+          {{ isReversed ? '↓' : '↑' }}
+        </span>
       </li>
     </ul>
   </div>
@@ -74,7 +84,7 @@ const selectOption = (key: string) => {
   position: relative;
   gap: 8px;
   border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 18px;
+  border-radius: 16px;
   padding: 10px 14px 10px 16px;
   background: rgba(15, 23, 42, 0.9);
 }
@@ -97,13 +107,14 @@ const selectOption = (key: string) => {
 .dropdown {
   position: absolute;
   top: 100%;
-  right: -16px;
+  left: 50%;
+  transform: translateX(-50%);
   margin-top: 10px;
-  min-width: 220px;
+  min-width: 230px;
   background: rgba(7, 14, 27, 0.98);
   border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: 20px;
-  padding: 10px 0;
+  border-radius: 18px;
+  padding: 13px 0;
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
   z-index: 20;
 }
@@ -129,5 +140,35 @@ const selectOption = (key: string) => {
 
 .direction {
   color: #94a3b8;
+}
+
+@media (max-width: 720px) {
+  .sort-wrapper {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .sort-wrapper > .text {
+    display: none;
+  }
+
+  .sort-trigger {
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0.9rem;
+  }
+
+  .sort-trigger .text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dropdown {
+    right: 0;
+    left: auto;
+    transform: none;
+    min-width: min(230px, calc(100vw - 32px));
+  }
 }
 </style>

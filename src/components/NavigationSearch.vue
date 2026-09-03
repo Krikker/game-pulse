@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useGenresPlatformsTags } from '@/stores/genresPlatformsTags.store.ts';
-import { ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import type { FilterParams } from '@/interfaces/filter.interface.ts';
 import CorrectSVGIcon from './CorrectSVGIcon.vue';
 import RatingStars from './RatingStars.vue';
@@ -10,6 +10,10 @@ import YearRangeSlider from './YearRangeSlider.vue';
 const props = defineProps<{ initialFilters?: FilterParams }>();
 
 const genresPlatformsTags = useGenresPlatformsTags();
+
+onMounted(() => {
+  genresPlatformsTags.fetchData();
+});
 
 const selectedGenres = ref<number[]>(
   props.initialFilters?.genres ? String(props.initialFilters.genres).split(',').map(Number) : [],
@@ -239,5 +243,39 @@ const clearFilters = () => {
   transform: translateY(-1px);
   filter: brightness(1.08);
   box-shadow: 0 12px 24px rgba(59, 130, 246, 0.16);
+}
+
+@media (max-width: 720px) {
+  .search-column {
+    gap: 20px;
+    padding: 18px 14px;
+    border-radius: 22px;
+  }
+
+  .genres-list h3,
+  .platform-list h3,
+  .release-list h3,
+  .rating-list h3 {
+    font-size: 1.15rem;
+  }
+
+  .genres-button,
+  .platform-button {
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .filter-title,
+  .platform-title {
+    overflow: hidden;
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .clear-filters-button {
+    height: 42px;
+    font-size: 1rem;
+  }
 }
 </style>

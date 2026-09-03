@@ -16,6 +16,16 @@ const games = ref<Result[]>([]);
 const totalGames = ref<number>(0);
 const searchQuery = ref<string>(String(route.query.search || ''));
 const isLoading = ref<boolean>(false);
+const isFiltersOpen = ref<boolean>(false);
+const discoverPageSize = 12;
+
+const sortOptions = [
+  { label: 'Popularity', key: 'added' },
+  { label: 'Release Date', key: 'released' },
+  { label: 'Name (A-Z)', key: 'name' },
+  { label: 'Rating', key: 'rating' },
+  { label: 'Metacritic', key: 'metacritic' },
+];
 
 watch(
   () => route.query.search,
@@ -36,7 +46,7 @@ const loadData = async () => {
       search: route.query.search as string,
       ordering: route.query.ordering as string,
       page: Number(route.query.page) || 1,
-      pageSize: 9,
+      pageSize: discoverPageSize,
     });
 
     games.value = data.results;
@@ -117,11 +127,16 @@ const subtitle = computed(() => {
     </div>
 
     <div class="search-body">
-      <NavigationSearch :initial-filters="route.query" @update="handleFilterUpdate" />
+      <div class="filters-panel" :class="{ 'filters-panel--open': isFiltersOpen }">
+        <button type="button" class="filters-toggle" @click="isFiltersOpen = !isFiltersOpen">
+          {{ isFiltersOpen ? 'Hide filters' : 'Filters' }}
+        </button>
+        <NavigationSearch :initial-filters="route.query" @update="handleFilterUpdate" />
+      </div>
       <div class="search-games">
         <div class="search-body__header">
           <span class="additional-info--grey-big">{{ totalGames }} games found</span>
-          <SortDropdown v-model="currentOrdering" />
+          <SortDropdown v-model="currentOrdering" :options="sortOptions" />
         </div>
         <div v-if="isLoading" class="spinner"></div>
         <div v-else>
@@ -140,7 +155,7 @@ const subtitle = computed(() => {
         </div>
         <PaginationComponent
           :total-items="totalGames"
-          :page-size="9"
+          :page-size="discoverPageSize"
           :current-page="Number(route.query.page) || 1"
           @update="(page) => router.push({ name: 'Discover', query: { ...route.query, page } })"
         />
@@ -230,6 +245,14 @@ main {
   align-items: start;
 }
 
+.filters-panel {
+  min-width: 0;
+}
+
+.filters-toggle {
+  display: none;
+}
+
 .search-games {
   background: var(--color-visible-search);
   border: 1px solid var(--color-box-border);
@@ -279,6 +302,87 @@ main {
   align-items: center;
   color: var(--color-search-text);
   font-size: 1.3rem;
+}
+
+@media (max-width: 1250px) {
+  .search-body {
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 18px;
+  }
+
+  .trending-games-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    --card-img-height: 280px;
+  }
+}
+
+@media (max-width: 800px) {
+  main {
+    gap: 13px;
+  }
+
+  .search-header__title {
+    font-size: 2.2rem;
+  }
+
+  .search-header .additional-info--grey-big {
+    margin-bottom: 18px;
+  }
+
+  .search-header__input {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+
+  .search-button {
+    width: 42px;
+    height: 42px;
+    border-radius: 11px;
+  }
+
+  .search-input {
+    font-size: 1rem;
+  }
+
+  .search-body {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .filters-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 44px;
+    border: 1px solid var(--color-box-border);
+    border-radius: 14px;
+    background: var(--color-visible-search);
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .filters-toggle:hover {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--color-visible-search), var(--color-visible-search)) padding-box,
+      var(--color-gradient) border-box;
+    box-shadow: 0 10px 24px rgba(59, 130, 246, 0.22);
+  }
+
+  .filters-panel:not(.filters-panel--open) :deep(.search-column) {
+    display: none;
+  }
+
+  .trending-games-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    --card-img-height: 220px;
+    --title-font-size: 1rem;
+    --card-rating-size: 1rem;
+  }
 }
 
 @keyframes spin {

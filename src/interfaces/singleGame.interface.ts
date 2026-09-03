@@ -1,68 +1,67 @@
-import type { Ratings } from './allGamesList.interface';
+import type { Platform, Ratings } from './allGamesList.interface';
+import type { GenresPlatformsTagsBase } from './filter.interface';
 
-export interface RootInterface {
+export interface SingleGame {
   id: number;
   slug: string;
   name: string;
-  name_original: string;
-  description: string;
+  description_raw: string;
   metacritic: number;
-  metacritic_platforms: Metacriticplatform[];
   released: string;
-  tba: boolean;
-  updated: string;
   background_image: string;
   background_image_additional: string;
   website: string;
   rating: number;
-  rating_top: number;
-  ratings: Ratings;
-  reactions: Ratings;
+  ratings: Ratings[];
   added: number;
-  added_by_status: Ratings;
+  added_by_status: AddedByStatus;
   playtime: number;
-  screenshots_count: number;
-  movies_count: number;
-  creators_count: number;
-  achievements_count: number;
-  parent_achievements_count: string;
+  platforms: Platform[];
+  developers: GenresPlatformsTagsBase[];
+  publishers: GenresPlatformsTagsBase[];
+
   reddit_url: string;
-  reddit_name: string;
-  reddit_description: string;
-  reddit_logo: string;
   reddit_count: number;
   twitch_count: string;
   youtube_count: string;
-  reviews_text_count: string;
-  ratings_count: number;
-  suggestions_count: number;
-  alternative_names: string[];
-  metacritic_url: string;
-  parents_count: number;
-  additions_count: number;
+
+  reviews_text_count: number;
   game_series_count: number;
-  esrb_rating: Esrbrating;
-  platforms: Platform[];
+  screenshots_count: number;
+  ratings_count: number;
+  movies_count: number;
+  achievements_count: number;
 }
 
-export interface Platform {
-  platform: Esrbrating;
-  released_at: string;
-  requirements: Requirements;
+export interface AddedByStatus {
+  beaten: number;
+  dropped: number;
+  owned: number;
+  playing: number;
+  toplay: number;
+  yet: number;
 }
 
-export interface Requirements {
-  minimum: string;
-  recommended: string;
-}
-
-export interface Esrbrating {
+export interface GameScreenshot {
   id: number;
-  slug: string;
-  name: string;
+  image: string;
 }
 
-export interface Metacriticplatform {
-  metascore: number;
-  url: string;
+export interface StatusBucket {
+  key: string;
+  label: string;
+  color: string;
+  count: number;
+  percent: number;
+}
+
+export interface ActivityCard {
+  label: string;
+  value: string;
+  hint: string;
+}
+
+export interface DetailItem {
+  label: string;
+  value: string;
 }

@@ -12,12 +12,20 @@ import { useClickOutside } from './UseClickOutside.ts';
 const searchQuery = ref<string>('');
 const results = ref<Result[]>([]);
 const isLoading = ref(false);
+const isMobileSearchOpen = ref(false);
+const isMenuOpen = ref(false);
 
 const isDropdownOpen = ref(false);
 const searchContainerRef = ref<HTMLElement | null>(null);
+const navRef = ref<HTMLElement | null>(null);
 
 useClickOutside(searchContainerRef, () => {
   isDropdownOpen.value = false;
+  isMobileSearchOpen.value = false;
+});
+
+useClickOutside(navRef, () => {
+  isMenuOpen.value = false;
 });
 
 const router = useRouter();
@@ -61,6 +69,7 @@ const handleSubmitSearch = async () => {
   if (query) {
     results.value = [];
     isDropdownOpen.value = false;
+    isMobileSearchOpen.value = false;
     router.push({
       name: 'Discover',
       query: { search: query },
@@ -77,20 +86,37 @@ const handleSubmitSearch = async () => {
         <h1 class="project-name">GamePulse</h1>
       </RouterLink>
     </div>
-    <div class="header-center">
+    <div
+      class="header-center"
+      :class="{
+        'header-center--mobile-open': isMobileSearchOpen && !isDiscover,
+        'header-center--discover': isDiscover,
+      }"
+    >
       <template v-if="isDiscover">
-        <div class="breadcrumbs">
-          <RouterLink to="/">Home</RouterLink>
-          <span>/</span>
-          <span>Discover</span>
-        </div>
-        <div class="discover-info">
-          <span v-if="searchText">Search results for "{{ searchText }}"</span>
-          <span v-else>Use the Discover page search to find games or filter by genre.</span>
+        <div class="discover-context">
+          <RouterLink to="/" class="discover-context__back" aria-label="Back to home">←</RouterLink>
+          <div class="discover-context__copy">
+            <span>Discover</span>
+            <strong v-if="searchText">Results for “{{ searchText }}”</strong>
+            <strong v-else>Find your next game</strong>
+          </div>
         </div>
       </template>
       <template v-else>
-        <div ref="searchContainerRef" class="search-container">
+        <button
+          type="button"
+          class="mobile-search-trigger"
+          aria-label="Open search"
+          @click="isMobileSearchOpen = !isMobileSearchOpen"
+        >
+          <IconSearch />
+        </button>
+        <div
+          ref="searchContainerRef"
+          class="search-container"
+          :class="{ 'search-container--mobile-open': isMobileSearchOpen }"
+        >
           <form @submit.prevent="handleSubmitSearch">
             <button type="submit" class="search-button"><IconSearch /></button>
             <input
@@ -98,7 +124,7 @@ const handleSubmitSearch = async () => {
               class="search-input"
               v-model="searchQuery"
               @focus="isDropdownOpen = results.length > 0"
-              @keydown.esc="isDropdownOpen = false"
+              @keydown.esc="isMobileSearchOpen = false"
               placeholder="Search games, genres, platforms..."
             />
           </form>
@@ -120,10 +146,21 @@ const handleSubmitSearch = async () => {
         </div>
       </template>
     </div>
-    <nav>
-      <ul class="router-links">
+    <nav ref="navRef">
+      <button
+        type="button"
+        class="menu-toggle"
+        :class="{ 'menu-toggle--open': isMenuOpen }"
+        aria-label="Toggle navigation menu"
+        :aria-expanded="isMenuOpen"
+        @click="isMenuOpen = !isMenuOpen"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <ul class="router-links" :class="{ 'router-links--open': isMenuOpen }">
         <li><RouterLink :to="'/'">Home</RouterLink></li>
-        <li><RouterLink :to="'/trending'">Trending</RouterLink></li>
         <li><RouterLink :to="'/discover'">Discover</RouterLink></li>
         <li><RouterLink :to="'/compare'">Compare</RouterLink></li>
         <li><RouterLink :to="'/stats'">Stats</RouterLink></li>
@@ -157,17 +194,54 @@ header {
   text-align: center;
 }
 
-.breadcrumbs {
+.discover-context {
   display: flex;
-  gap: 8px;
   align-items: center;
-  font-size: 14px;
-  color: var(--color-search-text);
-  margin-bottom: 6px;
+  gap: 12px;
+  text-align: left;
 }
 
-.breadcrumbs span {
+.discover-context__back {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 10px;
+  color: var(--color-search-text);
+  background: rgba(148, 163, 184, 0.08);
+  font-size: 18px;
+  transition: 0.2s ease;
+}
+
+.discover-context__back:hover {
   color: var(--color-text);
+  border-color: rgba(124, 92, 255, 0.45);
+  background: rgba(124, 92, 255, 0.16);
+}
+
+.discover-context__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.discover-context__copy span {
+  color: #9c89ff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.discover-context__copy strong {
+  max-width: 300px;
+  overflow: hidden;
+  color: var(--color-text);
+  font-size: 14px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .discover-info {
@@ -248,6 +322,47 @@ form:focus-within {
   gap: 50px;
 }
 
+nav {
+  justify-self: center;
+}
+
+.project-name {
+  font-size: 2rem;
+}
+
+.menu-toggle {
+  display: none;
+  width: 42px;
+  height: 42px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: var(--color-visible-search);
+}
+
+.menu-toggle span {
+  width: 19px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-text);
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.menu-toggle--open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+.menu-toggle--open span:nth-child(2) {
+  opacity: 0;
+}
+.menu-toggle--open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .router-links li {
   font-size: 19px;
 }
@@ -261,6 +376,25 @@ form:focus-within {
   margin-top: 6px;
   border-radius: 8px;
   overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: #101a2a;
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.48);
+  text-align: left;
+}
+
+.search-result-dropdown li {
+  display: block;
+  width: 100%;
+  background: transparent;
+}
+
+.search-result-dropdown :deep(.suggested-game) {
+  width: 100%;
+  text-align: left;
+}
+
+.search-result-dropdown :deep(.suggested-game__content) {
+  text-align: left;
 }
 
 .loading-indicator {
@@ -293,5 +427,237 @@ form:focus-within {
   color: var(--color-search-text);
   font-size: 17px;
   opacity: 0.9;
+}
+
+.mobile-search-trigger {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  header {
+    grid-template-columns: auto minmax(220px, 1fr) auto;
+    column-gap: 20px;
+  }
+
+  .router-links {
+    display: none;
+  }
+
+  .header-center,
+  .search-container {
+    width: 300px;
+    max-width: 100%;
+  }
+
+  .header-center {
+    justify-self: end;
+  }
+
+  .search-container {
+    margin-left: auto;
+  }
+
+  nav {
+    position: relative;
+    justify-self: end;
+  }
+
+  .menu-toggle {
+    display: flex;
+  }
+
+  .router-links--open {
+    position: absolute;
+    top: 52px;
+    right: 0;
+    z-index: 20;
+    display: flex;
+    width: 220px;
+    flex-direction: column;
+    gap: 0;
+    padding: 8px;
+    border: 1px solid var(--color-box-border);
+    border-radius: 12px;
+    background: #101a2a;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.48);
+  }
+
+  .router-links--open li {
+    padding: 10px 12px;
+  }
+
+  .header-center--discover .discover-context {
+    display: none;
+  }
+}
+
+@media (max-width: 1300px) and (min-width: 1101px) {
+  .header-center,
+  .search-container {
+    width: min(100%, 300px);
+  }
+  .router-links {
+    gap: 32px;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 761px) {
+  header {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: 100px;
+    gap: 0 16px;
+    padding: 0 32px;
+  }
+
+  .logo-name a {
+    height: 100px;
+  }
+
+  .header-center {
+    grid-column: 2;
+    grid-row: 1;
+    width: 300px;
+    max-width: 100%;
+    justify-self: center;
+  }
+
+  .search-container {
+    width: 300px;
+    max-width: 100%;
+    margin: 0 auto;
+  }
+
+  nav {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+  }
+
+  .menu-toggle {
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 760px) {
+  header {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    grid-template-rows: 90px;
+    align-items: center;
+    justify-items: stretch;
+    gap: 0 10px;
+    padding: 0 16px;
+  }
+
+  .logo-name {
+    justify-self: start;
+  }
+
+  .logo-name a {
+    height: 90px;
+  }
+
+  .header-center {
+    grid-column: 2;
+    grid-row: 1;
+    width: auto;
+    justify-self: end;
+    align-items: center;
+  }
+
+  .header-center--mobile-open {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: min(100%, 420px);
+    margin: 0 auto 8px;
+    justify-self: center;
+  }
+
+  .header-center--discover {
+    grid-column: 1 / 3;
+    grid-row: 2;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .mobile-search-trigger {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    border-radius: 12px;
+    color: var(--color-text);
+    background: var(--color-visible-search);
+  }
+
+  .mobile-search-trigger:active,
+  .mobile-search-trigger:hover {
+    border-color: rgba(124, 92, 255, 0.5);
+    background: rgba(124, 92, 255, 0.16);
+  }
+
+  .search-container {
+    display: none;
+  }
+
+  .header-center--mobile-open .search-container {
+    display: block;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .header-center--mobile-open .mobile-search-trigger {
+    display: none;
+  }
+
+  nav {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .header-center--mobile-open ~ nav {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .header-center--discover ~ nav {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .router-links {
+    position: absolute;
+    top: 50px;
+    right: 0;
+    z-index: 20;
+    width: min(220px, calc(100vw - 32px));
+    flex-direction: column;
+    gap: 0;
+    padding: 8px;
+    border: 1px solid var(--color-box-border);
+    border-radius: 12px;
+    background: #101a2a;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.48);
+  }
+
+  .router-links--open {
+    display: flex;
+  }
+
+  .router-links li {
+    padding: 10px 12px;
+  }
+
+  .router-links li {
+    font-size: 16px;
+    white-space: nowrap;
+  }
+
+  .discover-info {
+    display: none;
+  }
 }
 </style>

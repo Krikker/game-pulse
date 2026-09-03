@@ -148,7 +148,7 @@ onBeforeMount(() => {
 
 .mini-section__header p,
 .genres-list__title {
-  font-size: 23px;
+  font-size: clamp(18px, 2.1vw, 23px);
   font-weight: 600;
 }
 
@@ -161,19 +161,19 @@ onBeforeMount(() => {
 }
 
 .trending-games-list {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: clamp(8px, 1.4vw, 16px);
 }
 
 .trending-games-list a {
-  width: 230px;
-  height: 285px;
+  width: 100%;
 }
 
 .genres-and-platforms {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 60px;
+  gap: clamp(20px, 5vw, 60px);
 }
 
 .platforms-section,
@@ -185,8 +185,9 @@ onBeforeMount(() => {
 
 .genres-list,
 .platforms-list {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: clamp(6px, 1.5vw, 20px);
 }
 
 .genres-list a,
@@ -198,12 +199,133 @@ onBeforeMount(() => {
   justify-content: center;
   border-radius: 10px;
   background: var(--color-visible-search);
-  padding: 10px 0;
+  min-width: 0;
+  padding: clamp(7px, 1vw, 10px) 5px;
+}
+
+.genres-list__title,
+.platforms-list__title {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: clamp(15px, 1.9vw, 18px);
 }
 
 .additional-info-grey {
   color: var(--color-search-text);
-  font-size: 13px;
+  font-size: clamp(11px, 1.2vw, 13px);
   font-weight: 500;
+  white-space: nowrap;
+}
+
+@media (max-width: 1500px) {
+  main {
+    gap: 10px;
+  }
+
+  .mini-section__header a {
+    padding-top: 8px;
+  }
+
+  .tranding-games-section {
+    padding: 3px 0 8px;
+    gap: 5px;
+  }
+
+  .trending-games-list :deep(.trend-game__img) {
+    height: 125px;
+  }
+
+  .trending-games-list :deep(.trend-game__rating) {
+    top: 7px;
+    right: 7px;
+  }
+
+  .trending-games-list :deep(.trand-game__container-desc) {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  .trending-games-list :deep(.trend-game__title) {
+    font-size: 0.95rem;
+  }
+
+  .platforms-section,
+  .genres-section {
+    gap: 5px;
+  }
+
+  .genres-list,
+  .platforms-list {
+    gap: 6px;
+  }
+
+  .genres-list__title,
+  .platforms-list__title {
+    font-size: 17px;
+  }
+
+  .additional-info-grey {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 1450px) and (min-width: 1201px) {
+  .trending-games-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .trending-games-list a:nth-child(n + 6) {
+    display: none;
+  }
+
+  .genres-list .additional-info-grey,
+  .platforms-list .additional-info-grey {
+    display: none;
+  }
+}
+
+@media (max-width: 1200px) {
+  .trending-games-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .trending-games-list a:nth-child(n + 5) {
+    display: none;
+  }
+  .genres-and-platforms {
+    grid-template-columns: 1fr;
+  }
+  .genres-list,
+  .platforms-list {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  main {
+    padding-bottom: 50px;
+  }
+  .tranding-games-section {
+    padding: 7px 0 22px;
+    gap: 10px;
+  }
+  .trending-games-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .genres-and-platforms {
+    gap: 22px;
+  }
+  .genres-list,
+  .platforms-list {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .genres-list a:nth-child(n + 5),
+  .platforms-list a:nth-child(n + 5) {
+    display: none;
+  }
 }
 </style>

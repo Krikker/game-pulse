@@ -18,7 +18,13 @@ export const rawgService = {
       },
     });
   },
-  getById: (slug: string) => rawg.get(`/games/${slug}`),
+  getById: (slug: string | number) => rawg.get(`/games/${slug}`),
+  getScreenshots: (id: number) =>
+    rawg.get(`/games/${id}/screenshots`, {
+      params: {
+        page_size: 12,
+      },
+    }),
   getTrending: (pageSize = 6) => {
     return rawg.get('/games', {
       params: {

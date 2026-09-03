@@ -46,7 +46,7 @@ const props = defineProps<GameCard>();
   top: 18px;
   right: 18px;
   background: rgba(0, 0, 0, 0.8);
-  padding: 8px 10px;
+  padding: clamp(5px, 0.7vw, 8px) clamp(7px, 0.9vw, 10px);
   color: var(--color-gold);
   border-radius: 16px;
   font-size: var(--card-rating-size, 1rem);
@@ -62,12 +62,13 @@ const props = defineProps<GameCard>();
 }
 
 .trend-game__title {
-  font-size: var(--title-font-size, 1.1rem);
+  font-size: var(--title-font-size, clamp(0.9rem, 1.4vw, 1.1rem));
   font-weight: 700;
   line-height: 1.3;
   color: var(--color-text);
   display: -webkit-box;
   -webkit-line-clamp: var(--title-rows-length, 2);
+  line-clamp: var(--title-rows-length, 2);
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -77,5 +78,22 @@ const props = defineProps<GameCard>();
   padding: 2px 8px;
   border-radius: 6px;
   width: 54px;
+}
+
+@media (max-width: 600px) {
+  .trend-game {
+    border-radius: 14px;
+  }
+  .trend-game__img {
+    height: clamp(130px, 42vw, 190px);
+  }
+  .trend-game__rating {
+    top: 10px;
+    right: 10px;
+  }
+  .trand-game__container-desc {
+    padding: 8px;
+    gap: 3px;
+  }
 }
 </style>
