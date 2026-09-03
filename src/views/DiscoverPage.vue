@@ -87,6 +87,17 @@ const handleFilterUpdate = (newFilters: FilterParams) => {
   });
 };
 
+const handlePageChange = (page: number) => {
+  router
+    .push({
+      name: 'Discover',
+      query: { ...route.query, page },
+    })
+    .then(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+};
+
 const currentOrdering = computed({
   get: () => (route.query.ordering as string) || '-added',
   set: (value: string) => {
@@ -157,7 +168,7 @@ const subtitle = computed(() => {
           :total-items="totalGames"
           :page-size="discoverPageSize"
           :current-page="Number(route.query.page) || 1"
-          @update="(page) => router.push({ name: 'Discover', query: { ...route.query, page } })"
+          @update="handlePageChange"
         />
       </div>
     </div>

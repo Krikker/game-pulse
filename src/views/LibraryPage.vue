@@ -157,6 +157,7 @@ const getDraft = (game: LoadedLibraryGame): DraftEntry => ({
   status: drafts.value[game.id]?.status ?? game.library.status,
   platform: drafts.value[game.id]?.platform ?? game.library.platform,
   progress: drafts.value[game.id]?.progress ?? game.library.progress,
+  userRating: drafts.value[game.id]?.userRating ?? game.library.userRating ?? null,
 });
 
 const startEditing = (game: LoadedLibraryGame) => {
@@ -166,6 +167,7 @@ const startEditing = (game: LoadedLibraryGame) => {
       status: game.library.status,
       platform: game.library.platform,
       progress: game.library.progress,
+      userRating: game.library.userRating ?? null,
     },
   };
   editingGameId.value = game.id;
@@ -225,6 +227,24 @@ const setDraftProgress = (gameId: number, progress: number) => {
   };
 };
 
+const setDraftRating = (gameId: number, rating: number | null) => {
+  const draft = drafts.value[gameId];
+  if (!draft) return;
+
+  const nextRating =
+    rating === null || Number.isNaN(rating)
+      ? null
+      : Math.max(0, Math.min(10, Math.round(rating * 10) / 10));
+
+  drafts.value = {
+    ...drafts.value,
+    [gameId]: {
+      ...draft,
+      userRating: nextRating,
+    },
+  };
+};
+
 const saveEditing = (gameId: number) => {
   const draft = drafts.value[gameId];
   if (!draft) return;
@@ -233,6 +253,7 @@ const saveEditing = (gameId: number) => {
     status: draft.status,
     platform: draft.platform,
     progress: draft.progress,
+    userRating: draft.userRating,
   });
 
   const nextDrafts = { ...drafts.value };
@@ -385,7 +406,15 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
                 :data-status="game.library.status"
                 >{{ statusLabels[game.library.status] }}</span
               >
-              <span class="library-row__progress library-row__progress--readonly">
+              <span
+                v-if="game.library.userRating !== null && game.library.userRating !== undefined"
+                class="library-summary-chip library-summary-chip--rating"
+              >
+                My rating: {{ game.library.userRating }}/10
+              </span>
+              <span
+                class="library-row__progress library-row__progress--readonly library-row__progress--desktop"
+              >
                 <span class="library-progress"
                   ><span
                     class="library-progress__fill"
@@ -396,6 +425,17 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
               </span>
             </div>
           </div>
+          <span
+            class="library-row__progress library-row__progress--readonly library-row__progress--mobile"
+          >
+            <span class="library-progress"
+              ><span
+                class="library-progress__fill"
+                :style="{ width: `${progressWidth(game)}%` }"
+              ></span
+            ></span>
+            <small>{{ progressWidth(game) }}%</small>
+          </span>
         </article>
       </div>
 
@@ -483,6 +523,31 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
             <div class="library-editor__range-labels">
               <span>Not started</span><span>Completed</span>
             </div>
+          </div>
+          <div class="library-editor__field">
+            <div class="library-editor__label-row">
+              <span class="library-control__label">My rating</span>
+              <strong>{{ getDraft(editingGame).userRating ?? '—' }}/10</strong>
+            </div>
+            <input
+              class="library-editor__range"
+              type="range"
+              min="0"
+              max="10"
+              step="0.1"
+              :value="getDraft(editingGame).userRating ?? 0"
+              @input="
+                setDraftRating(editingGame.id, Number(($event.target as HTMLInputElement).value))
+              "
+            />
+            <button
+              v-if="getDraft(editingGame).userRating !== null"
+              type="button"
+              class="library-rating-clear"
+              @click="setDraftRating(editingGame.id, null)"
+            >
+              Clear rating
+            </button>
           </div>
           <div class="library-row__footer">
             <button type="button" class="secondary-button" @click="cancelEditing">Cancel</button
@@ -885,6 +950,12 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   font-size: 12px;
 }
 
+.library-summary-chip--rating {
+  color: var(--color-gold);
+  background: rgba(252, 211, 77, 0.1);
+  border-color: rgba(252, 211, 77, 0.22);
+}
+
 .library-summary-chip--status[data-status='completed'] {
   color: #5ee0ae;
   background: rgba(43, 187, 134, 0.12);
@@ -901,6 +972,10 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.library-row__progress--mobile {
+  display: none;
 }
 
 .library-row__progress--readonly {
@@ -1047,6 +1122,16 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   font-size: 12px;
 }
 
+.library-rating-clear {
+  align-self: flex-start;
+  color: var(--color-search-text);
+  font-size: 12px;
+}
+
+.library-rating-clear:hover {
+  color: var(--color-text);
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -1126,6 +1211,7 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
 
   .library-row {
     grid-template-columns: 82px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
     gap: 12px;
     padding: 10px;
   }
@@ -1137,6 +1223,13 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   .library-row__cover {
     width: 82px;
     aspect-ratio: 3 / 4;
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .library-row__body {
+    grid-column: 2;
+    grid-row: 1;
   }
 
   .library-row__topline {
@@ -1162,8 +1255,20 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   }
 
   .library-row__progress {
-    flex-direction: column;
-    align-items: stretch;
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .library-row__progress--desktop {
+    display: none;
+  }
+
+  .library-row__progress--mobile {
+    display: flex;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    min-width: 0;
   }
 
   .library-row__summary {
@@ -1175,7 +1280,17 @@ watch(() => library.my_lib.map((item) => `${item.id}:${item.updatedAt}`).join('|
   }
 
   .library-row__summary {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, 1fr);
+    align-items: center;
     min-width: 0;
+  }
+
+  .library-summary-chip--rating {
+    width: max-content;
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-top: 2px;
   }
 
   .library-row__progress-meta {

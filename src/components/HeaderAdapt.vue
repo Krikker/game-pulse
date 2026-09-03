@@ -545,7 +545,7 @@ nav {
     align-items: center;
     justify-items: stretch;
     gap: 0 10px;
-    padding: 0 16px;
+    padding: 0 10px 0 0;
   }
 
   .logo-name {
@@ -658,6 +658,12 @@ nav {
 
   .discover-info {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .project-name {
+    font-size: 1.9rem;
   }
 }
 </style>

@@ -14,6 +14,9 @@ export const rawgService = {
     return rawg.get('/games', {
       params: {
         search: query,
+        search_precise: true,
+        search_exact: true,
+        ordering: '-added',
         page_size: pageSize,
       },
     });
@@ -70,6 +73,12 @@ export const rawgService = {
         metacritic: filters.metacritic,
         ordering: filters.ordering || '-added',
         search: filters.search,
+        ...(filters.search
+          ? {
+              search_precise: true,
+              search_exact: true,
+            }
+          : {}),
       },
     });
   },

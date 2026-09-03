@@ -7,6 +7,7 @@ const defaultEntry = (gameId: number): LibraryEntry => ({
   status: 'unmarked',
   platform: 'pc',
   progress: 0,
+  userRating: null,
   updatedAt: new Date().toISOString(),
 });
 
@@ -23,12 +24,17 @@ const normalizeEntry = (item: StorageItem): LibraryEntry => {
 
   const status = item.status || 'unmarked';
   const progress = Number.isFinite(Number(item.progress)) ? Number(item.progress) : 0;
+  const parsedRating = item.userRating == null ? Number.NaN : Number(item.userRating);
+  const userRating = Number.isFinite(parsedRating)
+    ? Math.max(0, Math.min(10, Math.round(parsedRating * 10) / 10))
+    : null;
 
   return {
     id: item.id,
     status,
     platform: item.platform || 'pc',
     progress: normalizeProgress(status, progress),
+    userRating,
     updatedAt: item.updatedAt || new Date().toISOString(),
   };
 };
